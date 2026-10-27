@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.gnotesamsung7.robotyard'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.gnotesamsung7.robotyard'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // A fixed key, so every new build installs over the old one
+    signingConfigs {
+        debug {
+            storeFile file('robotyard-debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        debug { signingConfig signingConfigs.debug }
+        release { minifyEnabled false; signingConfig signingConfigs.debug }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // keep the game files uncompressed-friendly and readable from assets
+    androidResources { noCompress += ['woff2'] }
+}
