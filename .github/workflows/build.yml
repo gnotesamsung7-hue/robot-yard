@@ -23,10 +23,28 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Unpack project
+      - name: Find the project
         run: |
+          echo "Files in the repo:"; ls -la
           rm -rf build_src && mkdir build_src
-          unzip -q robot-yard.zip -d build_src
+          if [ -f settings.gradle ]; then
+            echo "Project files are already unpacked in the repo."
+            tar --exclude=./.git --exclude=./build_src -cf - . | tar -xf - -C build_src
+          else
+            ZIP=$(find . -path ./.git -prune -o -iname '*.zip' -print | head -n 1)
+            if [ -z "$ZIP" ]; then
+              echo "::error::No robot-yard.zip found. Upload robot-yard.zip to the repo (Add file > Upload files), then run this again."
+              exit 1
+            fi
+            echo "Using $ZIP"
+            unzip -q "$ZIP" -d build_src
+            # if the zip had a top folder, step into it
+            if [ ! -f build_src/settings.gradle ]; then
+              INNER=$(dirname "$(find build_src -name settings.gradle | head -n 1)")
+              [ -n "$INNER" ] && [ "$INNER" != "." ] && mv build_src build_tmp && mv "build_tmp/${INNER#build_src/}" build_src && rm -rf build_tmp
+            fi
+          fi
+          ls build_src
 
       - name: Build APK
         working-directory: build_src
